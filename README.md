@@ -1,6 +1,13 @@
 # melody_links
 A Music Box Implementation with Doubly Linked Lists
 
+NODE>LINKEDLISTD>PLAYLIST>main
+music playback is optional
+sort is next TODO; quick sort
+
+
+
+
 class Node // Templated base structure
   //Stores item, prevPtr, nextPtr
 
@@ -38,5 +45,6 @@ class Playlist
   removeSong(ID)
   currentSong()
   displayPlaylist() prints
+  // TODO :: sort() QUICK SORT
   updateID() // bad implementation TODO
 
