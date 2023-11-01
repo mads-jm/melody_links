@@ -64,16 +64,17 @@ void LinkedListD<T>::push_back(const T &item)
 template <typename T>
 bool LinkedListD<T>::remove(const T &item) // REVIEW
 {
-   if (size > 0)
+   int index = contains(item);
+   if (index > 0)
    {
       Node<T> *current = top;
-      while (current->getNext()->getItem() != item)
+      for (int i = 1; i < index; i++)
       {
          current = current->getNext();
-      }
+      }                                   // end: current is at node before node to be removed
       Node<T> *temp = current->getNext(); // object being removed = temp
       if (temp->getNext() != nullptr)
-      {                                     // object after being removed NOT EMPTY
+      {                                     // next NOT EMPTY
          current->setNext(temp->getNext()); // previous obj next set to deleting objects next
          delete temp;                       // node with item deleted
          temp = current->getNext();         // next object pointer adjustment
@@ -124,7 +125,7 @@ int LinkedListD<T>::contains(const T &item)
       { // index 1-n?
          if (current->getNext() != nullptr)
          {
-            if (current == item)
+            if (current->getItem() == item)
             {
                index = i;
                break;
