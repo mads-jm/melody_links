@@ -10,8 +10,9 @@ template <typename T>
 class LinkedListD
 {
 private:
-   Node<T> *top;
+   Node<T> *head;
    int size;
+   Node<T> *getPointer(int) const;
 
 public:
    LinkedListD();
@@ -25,14 +26,14 @@ public:
    bool replace(int index, const T &item); // TODO
 };
 template <typename T>
-LinkedListD<T>::LinkedListD() : top(nullptr), size(0)
+LinkedListD<T>::LinkedListD() : head(nullptr), size(0)
 {
 }
 
 template <typename T>
 LinkedListD<T>::~LinkedListD()
 {
-   Node<T> *a = top;
+   Node<T> *a = head;
    while (a != nullptr)
    {
       Node<T> *temp = a->getNext();
@@ -46,18 +47,13 @@ template <typename T>
 void LinkedListD<T>::push_back(const T &item)
 {
    // check for empty list
-   if (!top)
+   if (!head)
    {
-      top = new Node<T>(item);
+      head = new Node<T>(item);
    }
-   Node<T> *curr = top;
-   Node<T> *prev;
-   while (curr && curr->getNext())
-   {
-      prev = curr;
-      curr = curr->getNext();
-   }
-   curr->setNext(new Node<T>(item, prev)); // next is nullptr
+   Node<T> *current = getPointer(size - 1);
+   Node<T> *previous = current->getPrev();
+   current->setNext(new Node<T>(item, previous)); // next is nullptr
    size++;
 }
 
@@ -67,7 +63,7 @@ bool LinkedListD<T>::remove(const T &item) // REVIEW
    int index = contains(item);
    if (index > 0)
    {
-      Node<T> *current = top;
+      Node<T> *current = head;
       for (int i = 1; i < index; i++)
       {
          current = current->getNext();
@@ -102,14 +98,9 @@ int LinkedListD<T>::getSize()
 template <typename T>
 T LinkedListD<T>::at(int index)
 {
-   if (index <= size && index > 0)
+   if (index < size && index > -1)
    {
-      Node<T> *current = top;
-      for (int i = 0; i < index; i++)
-      { // index 1-n?
-         current = current->getNext();
-      }
-      return current->getItem();
+      return getPointer(index)->getItem();
    }
    throw std::invalid_argument("index out of bounds");
 }
@@ -117,28 +108,15 @@ T LinkedListD<T>::at(int index)
 template <typename T>
 int LinkedListD<T>::contains(const T &item)
 {
-   int index = 0;
-   if (size > 0)
+   Node<T> *current = head;
+   for (int i = 0; i < size; i++)
    {
-      Node<T> *current = top;
-      for (int i = 0; i < size; i++)
-      { // index 1-n?
-         if (current->getNext() != nullptr)
-         {
-            if (current->getItem() == item)
-            {
-               index = i;
-               break;
-            }
-            current = current->getNext();
-         }
-         else
-         { // give up if next is a nullptr for some reason
-            break;
-         }
-      }
+      if (size == 0 || current->getNext() == nullptr)
+         return -1;
+      if (current->getItem() == item)
+         return i;
    }
-   return index;
+   return -1;
 }
 
 template <typename T>
@@ -146,15 +124,22 @@ bool LinkedListD<T>::replace(int index, const T &item)
 {
    if (index < size)
    {
-      Node<T> *current = top;
-      for (int i = 0; i < index; i++)
-      { // index 1-n?
-         current = current->getNext();
-      }
+      Node<T> *current = getPointer(index);
       current->setItem(item);
       return true;
    }
    return false;
+}
+
+template <typename T>
+Node<T> *LinkedListD<T>::getPointer(int index) const
+{
+   Node<T> *current = head;
+   for (int i = 0; i < index; i++)
+   {
+      current = current->getNext();
+   }
+   return current;
 }
 
 #endif // __LINKEDLISTD_H__
