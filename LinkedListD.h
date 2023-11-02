@@ -64,9 +64,24 @@ bool LinkedListD<T>::remove(const T &item) // REVIEW
    int index = contains(item);
    if (index != -1)
    {
-      Node<T> *current = getNode(index);               // node to delete
-      current->getPrev()->setNext(current->getNext()); // move previous:next
-      if (index != size - 1)                           // NOT tail
+      Node<T> *current = getNode(index); // node to delete
+      if (index == 0)                    // head
+      {
+         if (size == 1) // only head
+         {
+            current = head;
+         }
+         else
+         {
+            head = current->getNext();
+            head->setPrev(nullptr);
+         }
+      }
+      else // any node but head
+      {
+         current->getPrev()->setNext(current->getNext()); // move previous:next
+      }
+      if (index != size - 1) // NOT tail
       {
          current->getNext()->setPrev(current->getPrev()); // move next:previous
       }
@@ -97,8 +112,8 @@ int LinkedListD<T>::contains(const T &item)
    Node<T> *current = head;
    for (int i = 0; i < size; i++)
    {
-      if (size == 0 || current->getNext() == nullptr)
-         return -1;
+      if (current->getNext() == nullptr)
+         return 0;
       if (current->getItem() == item)
          return i;
       current = current->getNext();

@@ -61,33 +61,95 @@ public:
       storage.push_back(song);
    }
 
-   void Playlist::removeSong(int index)
+   void Playlist::removeSong(Track &song)
    {
-      storage.remove(storage.at(index - 1));
+      if (storage.contains(song) < nowPlaying) // track removed before current
+      {
+         manageQueue(false);
+      }
+      else if (storage.contains(song) == nowPlaying)
+      {
+         // stop playback
+      }
+      storage.remove(song);
+   }
+   Track Playlist::getSong(int index)
+   {
+      return storage.at(index - 1);
+   }
+   int Playlist::searchSong(string _title) // TODO
+   {
+      for (int i = 0; i < storage.getSize(); i++)
+      {
+         Track song = storage.at(i);
+         if (song.title.compare(_title))
+         {
+            cout << "yes!" << endl;
+            return (i + 1);
+         }
+      }
+      return -1;
    }
    void Playlist::playNext()
    {
-      nowPlaying++;
+      manageQueue(true);
       // trigger stop / start of playback calling currentSong()
    }
    void Playlist::playPrevious()
    {
-      nowPlaying--;
+      manageQueue(false);
       // trigger stop / start of playback calling currentSong()
    }
    Track Playlist::currentSong()
    {
       return storage.at(nowPlaying);
    }
-   void Playlist::isplayPlaylist() // prints out each Track
+   int Playlist::currentSong(int foo) // override as accessor; parameter unused
    {
-      cout << "Currently loaded playlist : \n";
+      return nowPlaying;
+   }
+   void Playlist::displayPlaylist() // prints out each Track
+   {
       for (int i = 0; i < storage.getSize(); i++)
       { // i. Title - artist (duration s) \n
          cout << i + 1 << ". " << storage.at(i) << "\n";
       }
+      if (storage.getSize() == 0)
+         cout << "Playlist is empty! \n";
    }
    void Playlist::sort()
    { // by title via quick sort
+   }
+
+   int Playlist::getSize()
+   {
+      return storage.getSize();
+   }
+
+   void Playlist::manageQueue(bool io)
+   {
+      int n = (storage.getSize() - 1);
+      if (io)
+      { // added song
+         if (nowPlaying == n)
+         {
+            nowPlaying = 0;
+         }
+         else
+         {
+            nowPlaying++;
+         }
+      }
+      else
+      { // removed song
+         if (nowPlaying == 0)
+         {
+            nowPlaying = n;
+         }
+         else
+         {
+            nowPlaying--;
+         }
+      }
    }
 };
