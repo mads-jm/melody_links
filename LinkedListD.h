@@ -12,18 +12,19 @@ class LinkedListD
 private:
    Node<T> *head;
    int size;
-   Node<T> *getPointer(int) const;
+   Node<T> *getNode(int) const;
 
 public:
    LinkedListD();
    ~LinkedListD();
+   bool operator==(LinkedListD);
 
-   void push_back(const T &item);          // rev
-   bool remove(const T &item);             // rev
-   int getSize();                          // rev
-   T at(int index);                        // rev
-   int contains(const T &item);            // rev
-   bool replace(int index, const T &item); // TODO
+   void push_back(const T &item);
+   bool remove(const T &item);
+   int getSize();
+   T at(int index);
+   int contains(const T &item);
+   bool replace(int index, const T &item);
 };
 template <typename T>
 LinkedListD<T>::LinkedListD() : head(nullptr), size(0)
@@ -40,20 +41,20 @@ LinkedListD<T>::~LinkedListD()
       delete a;
       a = temp;
    }
-   size = 0;
 }
 
 template <typename T>
 void LinkedListD<T>::push_back(const T &item)
 {
    // check for empty list
-   if (!head)
+   if (!head) // special case needed?
    {
       head = new Node<T>(item);
+      size++;
+      return;
    }
-   Node<T> *current = getPointer(size - 1);
-   Node<T> *previous = current->getPrev();
-   current->setNext(new Node<T>(item, previous)); // next is nullptr
+   Node<T> *tail = getNode(size - 1);
+   tail->setNext(new Node<T>(item, tail));
    size++;
 }
 
@@ -61,30 +62,17 @@ template <typename T>
 bool LinkedListD<T>::remove(const T &item) // REVIEW
 {
    int index = contains(item);
-   if (index > 0)
+   if (index != -1)
    {
-      Node<T> *current = head;
-      for (int i = 1; i < index; i++)
+      Node<T> *current = getNode(index);               // node to delete
+      current->getPrev()->setNext(current->getNext()); // move previous:next
+      if (index != size - 1)                           // NOT tail
       {
-         current = current->getNext();
-      }                                   // end: current is at node before node to be removed
-      Node<T> *temp = current->getNext(); // object being removed = temp
-      if (temp->getNext() != nullptr)
-      {                                     // next NOT EMPTY
-         current->setNext(temp->getNext()); // previous obj next set to deleting objects next
-         delete temp;                       // node with item deleted
-         temp = current->getNext();         // next object pointer adjustment
-         temp->setPrev(current);
-         size--;
-         return true;
+         current->getNext()->setPrev(current->getPrev()); // move next:previous
       }
-      else
-      { // Object removed is at end of list
-         current->setNext(nullptr);
-         delete temp;
-         size--;
-         return true;
-      }
+      delete current;
+      size--;
+      return true;
    }
    return false;
 }
@@ -98,11 +86,9 @@ int LinkedListD<T>::getSize()
 template <typename T>
 T LinkedListD<T>::at(int index)
 {
-   if (index < size && index > -1)
-   {
-      return getPointer(index)->getItem();
-   }
-   throw std::invalid_argument("index out of bounds");
+   if (index < 0 || index >= size)
+      throw std::invalid_argument("index out of bounds");
+   return getNode(index)->getItem();
 }
 
 template <typename T>
@@ -115,6 +101,7 @@ int LinkedListD<T>::contains(const T &item)
          return -1;
       if (current->getItem() == item)
          return i;
+      current = current->getNext();
    }
    return -1;
 }
@@ -124,7 +111,7 @@ bool LinkedListD<T>::replace(int index, const T &item)
 {
    if (index < size)
    {
-      Node<T> *current = getPointer(index);
+      Node<T> *current = getNode(index);
       current->setItem(item);
       return true;
    }
@@ -132,7 +119,7 @@ bool LinkedListD<T>::replace(int index, const T &item)
 }
 
 template <typename T>
-Node<T> *LinkedListD<T>::getPointer(int index) const
+Node<T> *LinkedListD<T>::getNode(int index) const
 {
    Node<T> *current = head;
    for (int i = 0; i < index; i++)

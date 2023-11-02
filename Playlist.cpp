@@ -12,7 +12,6 @@ struct Track
    std::string title;
    std::string artist;
    int length;
-   int ID; // initialized when added to a playlist
 
    Track(std::string _path, std::string _title, std::string _artist, int _length) : path(_path), title(_title), artist(_artist), length(_length)
    {
@@ -30,61 +29,65 @@ struct Track
 
    friend ostream &operator<<(ostream &os, const Track &track)
    {
-      return cout << track.ID << ". " << track.title << " - " << track.artist << " (" << track.length << "s)"
+      return cout << track.title << " - " << track.artist << " (" << track.length << "s)"
                   << "\n";
    }
 };
 
-class Playlist : public LinkedListD<Track>
+class Playlist
 {
 private:
-   Node<Track> *top;
-   int size;
+   string title;
+   int nowPlaying; // index of storage
+   LinkedListD<Track> storage;
 
 public:
-   Playlist::Playlist() : top(nullptr), size(0)
+   Playlist::Playlist(string _title) : title(_title), nowPlaying(-1)
    { // default constructor
    }
-   // Playlist(Playlist& other);
-   // Playlist operator=(Playlist& other);
-   //~Playlist();
-
-   void Playlist::addSong(Track &song)
+   Playlist::Playlist(Playlist &other)
    {
-      size++;
-      song.ID = size;
-      push_back(song);
+      other.title = title;
+      other.nowPlaying = nowPlaying;
+      for (int i = 0; i < storage.getSize(); i++)
+      {
+         other.storage.push_back(storage.at(i));
+      }
    }
-   void removeSong(int ID)
+   // Playlist operator=(Playlist& other);
+
+   void Playlist::Playlist::addSong(Track &song)
    {
-      remove(at(ID));
-      size--;
-      updateID();
-   } // parameter ID or name?
-   // void playNext();
-   // void playPrevious();
+      storage.push_back(song);
+   }
+
+   void Playlist::removeSong(int index)
+   {
+      storage.remove(storage.at(index - 1));
+   }
+   void Playlist::playNext()
+   {
+      nowPlaying++;
+      // trigger stop / start of playback calling currentSong()
+   }
+   void Playlist::playPrevious()
+   {
+      nowPlaying--;
+      // trigger stop / start of playback calling currentSong()
+   }
    Track Playlist::currentSong()
    {
-      return top->getItem();
-   } // need to override << operator in Track
-   void displayPlaylist()
+      return storage.at(nowPlaying);
+   }
+   void Playlist::isplayPlaylist() // prints out each Track
    {
       cout << "Currently loaded playlist : \n";
-      for (int i = 1; i <= size; i++)
-      { // index 1-n?
-         cout << at(i) << "\n";
+      for (int i = 0; i < storage.getSize(); i++)
+      { // i. Title - artist (duration s) \n
+         cout << i + 1 << ". " << storage.at(i) << "\n";
       }
    }
-   // void sort();
-   void updateID()
-   {
-      Node<Track> *current = top;
-      for (int i = 1; i <= size; i++)
-      {
-         cout << "updoot" << i << endl;
-         Track now = current->getItem();
-         now.ID = i;
-         current = current->getNext();
-      }
+   void Playlist::sort()
+   { // by title via quick sort
    }
 };
