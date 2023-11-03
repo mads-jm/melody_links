@@ -1,7 +1,6 @@
 #include "LinkedListD.h"
 #include <string>
 #include <iostream>
-using namespace std;
 
 #include <windows.h>
 #pragma comment(lib, "Winmm.lib")
@@ -29,20 +28,20 @@ struct Track
 
    friend ostream &operator<<(ostream &os, const Track &track)
    {
-      return cout << track.title << " - " << track.artist << " (" << track.length << "s)"
-                  << "\n";
+      return std::cout << track.title << " - " << track.artist << " (" << track.length << "s)"
+                       << "\n";
    }
 };
 
 class Playlist
 {
 private:
-   string title;
+   std::string title;
    int nowPlaying; // index of storage
    LinkedListD<Track> storage;
 
 public:
-   Playlist::Playlist(string _title) : title(_title), nowPlaying(-1)
+   Playlist::Playlist(std::string _title) : title(_title), nowPlaying(-1)
    { // default constructor
    }
    Playlist::Playlist(Playlist &other)
@@ -59,32 +58,38 @@ public:
    void Playlist::Playlist::addSong(Track &song)
    {
       storage.push_back(song);
+      if (nowPlaying == -1) // track removed before current
+      {
+         nowPlaying++;
+      }
    }
 
    void Playlist::removeSong(Track &song)
    {
-      if (storage.contains(song) < nowPlaying) // track removed before current
-      {
-         manageQueue(false);
-      }
-      else if (storage.contains(song) == nowPlaying)
+      int index = storage.contains(song);
+      storage.remove(song);
+      if (index == nowPlaying)
       {
          // stop playback
       }
-      storage.remove(song);
+      if (index <= nowPlaying) // track removed before/is current
+      {
+         std::cout << nowPlaying << " " << storage.getSize() << endl;
+         manageQueue(false);
+         std::cout << nowPlaying << endl;
+      }
    }
    Track Playlist::getSong(int index)
    {
       return storage.at(index - 1);
    }
-   int Playlist::searchSong(string _title) // TODO
+   int Playlist::searchSong(std::string _title) // TODO
    {
       for (int i = 0; i < storage.getSize(); i++)
       {
          Track song = storage.at(i);
-         if (song.title.compare(_title))
+         if (song.title.compare(_title) == 0)
          {
-            cout << "yes!" << endl;
             return (i + 1);
          }
       }
@@ -112,10 +117,10 @@ public:
    {
       for (int i = 0; i < storage.getSize(); i++)
       { // i. Title - artist (duration s) \n
-         cout << i + 1 << ". " << storage.at(i) << "\n";
+         std::cout << i + 1 << ". " << storage.at(i) << "\n";
       }
       if (storage.getSize() == 0)
-         cout << "Playlist is empty! \n";
+         std::cout << "Playlist is empty! \n";
    }
    void Playlist::sort()
    { // by title via quick sort
@@ -142,7 +147,7 @@ public:
       }
       else
       { // removed song
-         if (nowPlaying == 0)
+         if (nowPlaying == 0 && (storage.getSize() != 0))
          {
             nowPlaying = n;
          }
