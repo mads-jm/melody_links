@@ -1,12 +1,5 @@
 #include <string>
 #include <iostream>
-#include <stdlib.h> // CLS
-//  #include <filesystem> // File path
-#include <Windows.h> // Audio playback,
-// #include <Mmsystem.h>
-// #include <mciapi.h>
-#pragma comment(lib, "Winmm.lib")
-
 #include "Playlist.cpp"
 
 Playlist master("master");
@@ -14,8 +7,10 @@ Playlist all("all"); // contains all possible tracks.
 
 static const std::string exePath = "DIRECT_PATH"; // input file path to mp3s
 //(std::filesystem::current_path()).string() + ("\\tracks");
-bool active = false;
+bool active = false; // playback flag
 
+// Displays the current catalogue for adding/removing Tracks
+// Gets an Index+1 value from user, returns the track at index
 Track catalogue(Playlist &deck, bool io)
 {
    int choice = 0;
@@ -35,7 +30,7 @@ Track catalogue(Playlist &deck, bool io)
       {
          std::cout << "to REMOVE] : ";
       }
-      cin >> choice;
+      std::cin >> choice;
       std::cout << "\n\n\n";
    } while (choice < 1 || choice > n);
    return deck.getSong(choice);
@@ -44,7 +39,8 @@ Track catalogue(Playlist &deck, bool io)
 // Handle 0 currentSong|1 playNext|2 playPrev
 void controller(int _case)
 {
-   if (master.currentSong(1) > -1)
+   int nowPlaying = master.currentSong(1);
+   if (nowPlaying > -1)
    { // playlist !empty
       if (_case == 1)
       { // play next
@@ -52,12 +48,12 @@ void controller(int _case)
       }
       else if (_case == 2)
       { // play previous
-         if (master.currentSong(1) > 0)
+         if (nowPlaying > 0)
          {
             master.playPrevious();
          }
          else
-         {
+         { // previous from head ==
             std::cout << "Nope! This is the only song in the playlist\n\n";
             return;
          }
@@ -76,6 +72,7 @@ void controller(int _case)
    }
 }
 
+// PlaybackMenu; Play/Pause, Track navigation, and displaying loaded track
 void playback()
 {
    int choice;
@@ -104,12 +101,13 @@ void playback()
          {
             if (!active)
             {
-               // play
+               controller(0);
                active = true;
             }
             else
             {
                // pause
+               cout << "Paused.\n";
                active = false;
             }
          }
@@ -135,7 +133,7 @@ void playback()
    } while (choice != 5);
 }
 
-// in place of a proper inputs system, method handles audio file input
+// in place of a proper inputs system, method handles Track/audio file input
 void localIn(Playlist &deck)
 {
    // proper implementation would allow manual input of paths and details
@@ -208,7 +206,7 @@ int main()
          _title = " ";
          std::cout << "\" 0 \" to return to the menu. \n";
          std::cout << "To search, enter the title desired: ";
-         cin.ignore();
+         std::cin.ignore();
          while (_title != "0")
          {
             std::getline(std::cin, _title);
@@ -220,12 +218,14 @@ int main()
          }
          break;
       case 7:
-         // master.sort();
-         // std::cout << "Sorted the active playlist by title!" << "\n\n";
+         master.sort();
+         std::cout << "Sorted the active playlist by title!"
+                   << "\n\n";
          break;
       case 8:
-         // master.shuffle();
-         // std::cout << "Shuffled the active playlist by title!" << "\n\n";
+         master.shuffle();
+         std::cout << "Shuffled the active playlist by title!"
+                   << "\n\n";
          break;
       case 9:
          std::cout << "Goodbye!" << endl;
@@ -234,7 +234,19 @@ int main()
          std::cout << "Invalid choice. Please try again."
                    << "\n";
       }
-   } while (choice != 0);
+   } while (choice != 9);
 
    return 0;
 }
+
+/*
+Below are includes to be used for audio playback UNIMPLEMENTED
+
+#include <stdlib.h> // CLS
+#include <filesystem> // File path
+#include <Windows.h> // Audio playback,
+#include <Mmsystem.h>
+#include <mciapi.h>
+#pragma comment(lib, "Winmm.lib")
+
+*/
